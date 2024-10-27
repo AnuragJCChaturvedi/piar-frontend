@@ -59,11 +59,11 @@ function HomePage() {
   return (
     <HomePageContainer>
       <Title>
-        <Beacon sync="primary" /> Emergency Medical Hologram <Beacon sync="secondary" />
+        <Beacon sync="primary" /> Emergency - Patient Initial Assessment Report<Beacon sync="secondary" />
       </Title>
       <Panel>
         <p>Providing advanced ENT care with real-time emergency responses.</p>
-        <Button>Contact Now</Button>
+        {/* <Button>Contact Now</Button> */}
       </Panel>
       <VoiceRecorderContainer>
         <h2>Record Your Voice</h2>

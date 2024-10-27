@@ -5,6 +5,9 @@ import { faCirclePause, faCircleStop, faCirclePlay } from "@fortawesome/free-sol
 import wavEncoder from "wav-encoder";
 import Webcam from "react-webcam";
 import RecordingPreview from "./RecordingPreview"; // Import the RecordingPreview component
+import HolographicCard from "./HolographicCard";
+
+
 
 const RecorderContainer = styled.div`
   display: flex;
@@ -79,6 +82,9 @@ const VoiceRecorder = () => {
   const timerRef = useRef(null);
   const webcamRef = useRef(null);
   const imageCaptureInterval = useRef(null);
+
+  const [transcriptionData, setTranscriptionData] = useState(null);
+
 
   // Start audio and video recording
   const startRecording = async () => {
@@ -158,7 +164,7 @@ const VoiceRecorder = () => {
     for (let image of images) {
         const response = await fetch(image);
         const imageBlob = await response.blob();
-        formData.append("images", imageBlob, "image.jpeg"); 
+        formData.append("images", imageBlob, "image.jpeg");
     }
 
     try {
@@ -167,11 +173,17 @@ const VoiceRecorder = () => {
             body: formData,
         });
         const result = await response.json();
-        console.log(result);
+        
+        // Extract and parse JSON string within "result"
+        const jsonString = result.result.match(/```json([\s\S]*?)```/)[1].trim();  // Extract JSON string
+        const parsedData = JSON.parse(jsonString);  // Parse extracted JSON
+        setTranscriptionData(parsedData);  // Store parsed data in state
     } catch (error) {
         console.error("Error submitting data:", error);
     }
 };
+
+
 
 
 
@@ -209,40 +221,43 @@ const VoiceRecorder = () => {
   };
 
   return (
-    <RecorderContainer>
-      {isRecording && <TimerContainer>{formatTime(timer)}</TimerContainer>}
-      <CircularControls>
-        {isRecording ? (
-          <>
-            <IconButton icon={isPaused ? faCirclePlay : faCirclePause} onClick={togglePause} />
-            <IconButton icon={faCircleStop} onClick={stopRecording} />
-          </>
-        ) : (
-          <StartIcon icon={faCirclePlay} onClick={startRecording} />
-        )}
-      </CircularControls>
-
-      <WebcamContainer>
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={320}
-          height={240}
-        />
-        <FlashEffect flash={flash} />
-      </WebcamContainer>
-
-      {audioURL && (
-        <RecordingPreview
-          audioURL={audioURL}
-          images={images}
-          onCancel={handleCancel}
-          onSubmit={handleSubmit}
-        />
-      )}
-    </RecorderContainer>
-  );
+        <RecorderContainer>
+            {isRecording && <TimerContainer>{formatTime(timer)}</TimerContainer>}
+            <CircularControls>
+                {isRecording ? (
+                    <>
+                        <IconButton icon={isPaused ? faCirclePlay : faCirclePause} onClick={togglePause} />
+                        <IconButton icon={faCircleStop} onClick={stopRecording} />
+                    </>
+                ) : (
+                    <StartIcon icon={faCirclePlay} onClick={startRecording} />
+                )}
+            </CircularControls>
+    
+            <WebcamContainer>
+                <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    width={320}
+                    height={240}
+                />
+                <FlashEffect flash={flash} />
+            </WebcamContainer>
+    
+            {audioURL && (
+                <RecordingPreview
+                    audioURL={audioURL}
+                    images={images}
+                    onCancel={handleCancel}
+                    onSubmit={handleSubmit}
+                />
+            )}
+    
+            {transcriptionData && <HolographicCard data={transcriptionData} />} {/* Display card if data exists */}
+        </RecorderContainer>
+    );
+    
 };
 
 export default VoiceRecorder;
